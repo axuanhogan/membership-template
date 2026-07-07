@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: membership-template
+
+  datasource:
+    url: jdbc:h2:mem:membershipdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: false
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: ${JET.SECRET:dGhpcy1pcy1hLXN1cGVyLXNlY3JldC1rZXktd2hpY2gtaXMtbG9uZy1lbm91Z2gtZm9yLWp3dC1zaWduaW5nLTI1Ni1iaXRzCg==}
+  expiration-ms: 3600000
+  pre-auth-expiration-ms: 300000
+
+mailjet:
+  api-key: ${MAILJET.API_KEY:test}
+  secret-key: ${MAILJET.SECRET_KEY:test}
+  sender-email: ${SENDER_EMAIL:test@example.com}
+  sender-name: ${SENDER_NAME:test}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.axuanhogan: DEBUG
