@@ -45,8 +45,8 @@ public class AuthController {
     public ResponseEntity<ApiResponse<SignUpResponse>> signUp(@Valid @RequestBody SignUpRequest request) {
         User user = authService.signUp(request.email(), request.password());
 
-        // 寄送啟用郵件
-        mailService.sendActivationEmail(user.getEmail(), user.getActivationToken());
+        String activationLink = "http://localhost:8080/v1/auth/sign-up/activate?token=" + user.getActivationToken();
+        mailService.sendActivationEmail(user.getEmail(), activationLink);
 
         String message = "註冊成功，請查看信箱並點擊開通連結。";
         SignUpResponse response = new SignUpResponse(user.getEmail());
@@ -55,7 +55,7 @@ public class AuthController {
 
     @GetMapping("/sign-up/activate")
     @Operation(summary = "帳號開通", description = "接收 Email 連結中的開通 Token，驗證無誤後啟用使用者帳號。")
-    public ResponseEntity<ApiResponse<Void>> signUpActivate(@RequestParam String token) {
+    public ResponseEntity<ApiResponse<Void>> signUpActivate(@RequestParam("token") String token) {
         authService.activateAccount(token);
 
         String message = "帳號開通成功！現在可以開始登入。";

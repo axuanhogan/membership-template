@@ -24,6 +24,9 @@ spring:
       hibernate:
         format_sql: true
 
+security:
+  permit-all-patterns: ${SECURITY_PERMIT_ALL_PATTERNS:/v1/auth/**,/h2-console/**,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html}
+
 jwt:
   secret: ${JET.SECRET:dGhpcy1pcy1hLXN1cGVyLXNlY3JldC1rZXktd2hpY2gtaXMtbG9uZy1lbm91Z2gtZm9yLWp3dC1zaWduaW5nLTI1Ni1iaXRzCg==}
   expiration-ms: 3600000

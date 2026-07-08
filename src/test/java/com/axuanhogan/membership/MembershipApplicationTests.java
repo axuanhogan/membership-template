@@ -47,6 +47,7 @@ public class MembershipApplicationTests {
     }
 
     @Test
+    @SuppressWarnings("null")
     public void testFullUserLifecycle() throws Exception {
         String email = "test@example.com";
         String password = "securePassword123";
@@ -74,11 +75,9 @@ public class MembershipApplicationTests {
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", containsString("尚未開通")));
 
-        // 2. 帳號啟用 (PATCH /v1/auth/sign-up)
-        String activateJson = objectMapper.writeValueAsString(Map.of("token", user.getActivationToken()));
-        mockMvc.perform(patch("/v1/auth/sign-up")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(activateJson))
+        // 2. 帳號啟用 (GET /v1/auth/sign-up/activate)
+        mockMvc.perform(get("/v1/auth/sign-up/activate")
+                        .param("token", user.getActivationToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.message", containsString("帳號開通成功")));

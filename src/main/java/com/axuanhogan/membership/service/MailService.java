@@ -37,8 +37,7 @@ public class MailService {
     /**
      * 發送開通帳號電子郵件
      */
-    public void sendActivationEmail(String toEmail, String activationToken) {
-        String activationLink = "http://localhost:8080/api/auth/activate?token=" + activationToken;
+    public void sendActivationEmail(String toEmail, String activationLink) {
         log.info("[Test Helper] 帳號開通連結 (若 Mailjet 未設定或發送失敗，可直接複製此連結測試): {}", activationLink);
 
         String subject = "會員帳號啟用信";
