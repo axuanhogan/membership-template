@@ -3,7 +3,6 @@ package com.axuanhogan.membership.controller.v1;
 import com.axuanhogan.membership.dao.User;
 import com.axuanhogan.membership.dto.request.SignInActivateRequest;
 import com.axuanhogan.membership.dto.request.SignInRequest;
-import com.axuanhogan.membership.dto.request.SignUpActivateRequest;
 import com.axuanhogan.membership.dto.request.SignUpRequest;
 import com.axuanhogan.membership.dto.response.ApiResponse;
 import com.axuanhogan.membership.dto.response.SignUpResponse;
@@ -54,10 +53,10 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(message, response));
     }
 
-    @PatchMapping("/sign-up")
+    @GetMapping("/sign-up/activate")
     @Operation(summary = "帳號開通", description = "接收 Email 連結中的開通 Token，驗證無誤後啟用使用者帳號。")
-    public ResponseEntity<ApiResponse<Void>> signUpActivate(@Valid @RequestBody SignUpActivateRequest request) {
-        authService.activateAccount(request.token());
+    public ResponseEntity<ApiResponse<Void>> signUpActivate(@RequestParam String token) {
+        authService.activateAccount(token);
 
         String message = "帳號開通成功！現在可以開始登入。";
         return ResponseEntity.ok(ApiResponse.success(message));

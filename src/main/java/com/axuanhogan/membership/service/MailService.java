@@ -39,16 +39,15 @@ public class MailService {
      */
     public void sendActivationEmail(String toEmail, String activationToken) {
         String activationLink = "http://localhost:8080/api/auth/activate?token=" + activationToken;
-        log.info("[TEST HELPER] 帳號開通連結 (若 Mailjet 未設定或發送失敗，可直接複製此連結測試): {}", activationLink);
+        log.info("[Test Helper] 帳號開通連結 (若 Mailjet 未設定或發送失敗，可直接複製此連結測試): {}", activationLink);
 
         String subject = "會員帳號啟用信";
         String htmlContent = String.format(
                 "<h3>歡迎註冊！</h3>" +
-                "<p>請點擊下方連結以開通您的帳號：</p>" +
-                "<a href='%s' target='_blank'>%s</a>" +
-                "<p>此連結有效時間為 30 分鐘。</p>",
-                activationLink, activationLink
-        );
+                        "<p>請點擊下方連結以開通您的帳號：</p>" +
+                        "<a href='%s' target='_blank'>%s</a>" +
+                        "<p>此連結有效時間為 30 分鐘。</p>",
+                activationLink, activationLink);
 
         sendEmailViaMailjet(toEmail, subject, htmlContent);
     }
@@ -62,10 +61,9 @@ public class MailService {
         String subject = "登入兩階段驗證碼";
         String htmlContent = String.format(
                 "<h3>您好，</h3>" +
-                "<p>您的登入驗證碼為：<strong style='font-size: 24px; color: #1e88e5;'>%s</strong></p>" +
-                "<p>此驗證碼有效時間為 5 分鐘，請勿洩漏給他人。</p>",
-                otpCode
-        );
+                        "<p>您的登入驗證碼為：<strong style='font-size: 24px; color: #1e88e5;'>%s</strong></p>" +
+                        "<p>此驗證碼有效時間為 5 分鐘，請勿洩漏給他人。</p>",
+                otpCode);
 
         sendEmailViaMailjet(toEmail, subject, htmlContent);
     }
@@ -79,18 +77,16 @@ public class MailService {
 
         try {
             MailjetRequest payload = new MailjetRequest(List.of(
-                new MailjetMessage(
-                    new MailjetContact(senderEmail, senderName),
-                    List.of(new MailjetContact(toEmail, "會員")),
-                    subject,
-                    subject,
-                    htmlContent
-                )
-            ));
+                    new MailjetMessage(
+                            new MailjetContact(senderEmail, senderName),
+                            List.of(new MailjetContact(toEmail, "會員")),
+                            subject,
+                            subject,
+                            htmlContent)));
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            
+
             // Basic Auth Header
             String auth = apiKey + ":" + secretKey;
             byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.US_ASCII));
@@ -115,13 +111,17 @@ public class MailService {
     }
 
     // Mailjet API DTOs (使用 Java Records 簡潔表示)
-    private record MailjetRequest(List<MailjetMessage> Messages) {}
+    private record MailjetRequest(List<MailjetMessage> Messages) {
+    }
+
     private record MailjetMessage(
             MailjetContact From,
             List<MailjetContact> To,
             String Subject,
             String TextPart,
-            String HTMLPart
-    ) {}
-    private record MailjetContact(String Email, String Name) {}
+            String HTMLPart) {
+    }
+
+    private record MailjetContact(String Email, String Name) {
+    }
 }
