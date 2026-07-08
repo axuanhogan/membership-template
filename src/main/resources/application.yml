@@ -32,11 +32,12 @@ jwt:
   expiration-ms: 3600000
   pre-auth-expiration-ms: 300000
 
-mailjet:
-  api-key: ${MAILJET.API_KEY:test}
-  secret-key: ${MAILJET.SECRET_KEY:test}
-  sender-email: ${SENDER_EMAIL:test@example.com}
-  sender-name: ${SENDER_NAME:test}
+mailgun:
+  api-key: ${MAILGUN.API_KEY:}
+  domain: ${MAILGUN.DOMAIN:}
+  base-url: ${MAILGUN.BASE_URL:https://api.mailgun.net}
+  sender-email: ${SENDER_EMAIL:}
+  sender-name: ${SENDER_NAME:}
 
 logging:
   level:

@@ -8,28 +8,31 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
 
 @Service
 public class MailService {
 
     private static final Logger log = LoggerFactory.getLogger(MailService.class);
-    private static final String MAILJET_URL = "https://api.mailjet.com/v3.1/send";
 
-    @Value("${mailjet.api-key}")
+    @Value("${mailgun.api-key}")
     private String apiKey;
 
-    @Value("${mailjet.secret-key}")
-    private String secretKey;
+    @Value("${mailgun.domain}")
+    private String domain;
 
-    @Value("${mailjet.sender-email}")
+    @Value("${mailgun.base-url}")
+    private String baseUrl;
+
+    @Value("${mailgun.sender-email}")
     private String senderEmail;
 
-    @Value("${mailjet.sender-name}")
+    @Value("${mailgun.sender-name}")
     private String senderName;
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -38,7 +41,7 @@ public class MailService {
      * 發送開通帳號電子郵件
      */
     public void sendActivationEmail(String toEmail, String activationLink) {
-        log.info("[Test Helper] 帳號開通連結 (若 Mailjet 未設定或發送失敗，可直接複製此連結測試): {}", activationLink);
+        log.info("[Test Helper] 帳號開通連結 (若 Mailgun 未設定或發送失敗，可直接複製此連結測試): {}", activationLink);
 
         String subject = "會員帳號啟用信";
         String htmlContent = String.format(
@@ -48,14 +51,14 @@ public class MailService {
                         "<p>此連結有效時間為 30 分鐘。</p>",
                 activationLink, activationLink);
 
-        sendEmailViaMailjet(toEmail, subject, htmlContent);
+        sendEmailViaMailgun(toEmail, subject, htmlContent);
     }
 
     /**
      * 發送兩階段驗證 OTP 電子郵件
      */
     public void sendOtpEmail(String toEmail, String otpCode) {
-        log.info("[Test Helper] 兩階段驗證 OTP (若 Mailjet 未設定或發送失敗，可使用此驗證碼): {}", otpCode);
+        log.info("[Test Helper] 兩階段驗證 OTP (若 Mailgun 未設定或發送失敗，可使用此驗證碼): {}", otpCode);
 
         String subject = "登入兩階段驗證碼";
         String htmlContent = String.format(
@@ -64,63 +67,49 @@ public class MailService {
                         "<p>此驗證碼有效時間為 5 分鐘，請勿洩漏給他人。</p>",
                 otpCode);
 
-        sendEmailViaMailjet(toEmail, subject, htmlContent);
+        sendEmailViaMailgun(toEmail, subject, htmlContent);
     }
 
-    private void sendEmailViaMailjet(String toEmail, String subject, String htmlContent) {
+    private void sendEmailViaMailgun(String toEmail, String subject, String htmlContent) {
         // 檢查是否為預設的 Placeholder 或是未填入值
-        if (isPlaceholderOrEmpty(apiKey) || isPlaceholderOrEmpty(secretKey) || isPlaceholderOrEmpty(senderEmail)) {
-            log.warn("[Mailjet] 偵測到 Mailjet API Key/Secret 尚未設定（仍為預設值），跳過發信步驟。");
+        if (isPlaceholderOrEmpty(apiKey) || isPlaceholderOrEmpty(domain) || isPlaceholderOrEmpty(senderEmail)) {
+            log.warn("[Mailgun] 偵測到 Mailgun API Key/Domain 尚未設定（仍為預設值），跳過發信步驟。");
             return;
         }
 
         try {
-            MailjetRequest payload = new MailjetRequest(List.of(
-                    new MailjetMessage(
-                            new MailjetContact(senderEmail, senderName),
-                            List.of(new MailjetContact(toEmail, "會員")),
-                            subject,
-                            subject,
-                            htmlContent)));
+            String cleanBaseUrl = baseUrl != null ? baseUrl.replaceAll("/+$", "") : "https://api.mailgun.net";
+            String url = String.format("%s/v3/%s/messages", cleanBaseUrl, domain);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
             // Basic Auth Header
-            String auth = apiKey + ":" + secretKey;
-            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.US_ASCII));
-            String authHeader = "Basic " + new String(encodedAuth);
+            String auth = "api:" + apiKey;
+            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+            String authHeader = "Basic " + new String(encodedAuth, StandardCharsets.UTF_8);
             headers.set("Authorization", authHeader);
 
-            HttpEntity<MailjetRequest> requestEntity = new HttpEntity<>(payload, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(MAILJET_URL, requestEntity, String.class);
+            MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+            form.add("from", String.format("%s <%s>", senderName, senderEmail));
+            form.add("to", toEmail);
+            form.add("subject", subject);
+            form.add("html", htmlContent);
+
+            HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(form, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("[Mailjet] 電子郵件成功發送至 {}", toEmail);
+                log.info("[Mailgun] 電子郵件成功發送至 {}", toEmail);
             } else {
-                log.error("[Mailjet] 發送郵件失敗，狀態碼：{}，回應內容：{}", response.getStatusCode(), response.getBody());
+                log.error("[Mailgun] 發送郵件失敗，狀態碼：{}，回應內容：{}", response.getStatusCode(), response.getBody());
             }
         } catch (Exception e) {
-            log.error("[Mailjet] 呼叫 Mailjet API 時發生異常，錯誤訊息：{}", e.getMessage());
+            log.error("[Mailgun] 呼叫 Mailgun API 時發生異常，錯誤訊息：{}", e.getMessage());
         }
     }
 
     private boolean isPlaceholderOrEmpty(String value) {
-        return value == null || value.trim().isEmpty() || value.contains("YOUR_MAILJET");
-    }
-
-    // Mailjet API DTOs (使用 Java Records 簡潔表示)
-    private record MailjetRequest(List<MailjetMessage> Messages) {
-    }
-
-    private record MailjetMessage(
-            MailjetContact From,
-            List<MailjetContact> To,
-            String Subject,
-            String TextPart,
-            String HTMLPart) {
-    }
-
-    private record MailjetContact(String Email, String Name) {
+        return value == null || value.trim().isEmpty() || value.contains("YOUR_MAILGUN");
     }
 }
