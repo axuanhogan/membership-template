@@ -28,7 +28,7 @@ Then edit the `.env` file and fill in your settings, especially the API key and 
 
 ```ini
 # JWT Secret Key (Default value provided, make sure to change it in production environment)
-JET.SECRET="dGhpcy1pcy1hLXN1cGVyLXNlY3JldC1rZXktd2hpY2gtaXMtbG9uZy1lbm91Z2gtZm9yLWp3dC1zaWduaW5nLTI1Ni1iaXRzCg=="
+JWT.SECRET="dGhpcy1pcy1hLXN1cGVyLXNlY3JldC1rZXktd2hpY2gtaXMtbG9uZy1lbm91Z2gtZm9yLWp3dC1zaWduaW5nLTI1Ni1iaXRzCg=="
 
 # Mailgun Email Configuration (Get API Key and Domain from the Mailgun platform)
 MAILGUN.API_KEY="your-mailgun-api-key"
