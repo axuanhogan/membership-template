@@ -12,6 +12,7 @@ import com.axuanhogan.membership.security.TokenProvider;
 import com.axuanhogan.membership.service.AuthService;
 import com.axuanhogan.membership.service.MailService;
 import com.axuanhogan.membership.service.UserService;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,7 +46,8 @@ public class AuthController {
     public ResponseEntity<ApiResponse<SignUpResponse>> signUp(@Valid @RequestBody SignUpRequest request) {
         User user = authService.signUp(request.email(), request.password());
 
-        String activationLink = "http://localhost:8080/v1/auth/sign-up/activate?token=" + user.getActivationToken();
+        String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        String activationLink = baseUrl + "/v1/auth/sign-up/activate?token=" + user.getActivationToken();
         mailService.sendActivationEmail(user.getEmail(), activationLink);
 
         String message = "註冊成功，請查看信箱並點擊開通連結。";
