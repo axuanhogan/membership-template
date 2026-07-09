@@ -1,3 +1,6 @@
+server:
+  forward-headers-strategy: framework
+
 spring:
   application:
     name: membership-template
@@ -27,6 +30,11 @@ spring:
 security:
   permit-all-patterns: ${SECURITY_PERMIT_ALL_PATTERNS:/v1/auth/**,/h2-console/**,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html}
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.axuanhogan: DEBUG
+
 jwt:
   secret: ${JWT.SECRET:dGhpcy1pcy1hLXN1cGVyLXNlY3JldC1rZXktd2hpY2gtaXMtbG9uZy1lbm91Z2gtZm9yLWp3dC1zaWduaW5nLTI1Ni1iaXRzCg==}
   expiration-ms: 3600000
@@ -38,8 +46,3 @@ mailgun:
   base-url: ${MAILGUN.BASE_URL:https://api.mailgun.net}
   sender-email: ${SENDER_EMAIL:}
   sender-name: ${SENDER_NAME:}
-
-logging:
-  level:
-    org.springframework.security: DEBUG
-    com.axuanhogan: DEBUG
