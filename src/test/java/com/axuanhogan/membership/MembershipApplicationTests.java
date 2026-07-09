@@ -143,6 +143,10 @@ public class MembershipApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.email", is(email)))
-                .andExpect(jsonPath("$.data.lastSignInAt", notNullValue()));
+                .andExpect(jsonPath("$.data.lastSignInAt", anyOf(
+                        containsString("+08:00"),
+                        containsString("UTC+8"),
+                        containsString("GMT+8")
+                )));
     }
 }

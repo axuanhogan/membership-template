@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.time.ZoneId;
 
 @RestController
 @RequestMapping("/v1/users")
@@ -32,7 +33,7 @@ public class UserController {
 
         User user = userService.findByEmail(email);
 
-        String lastSignInStr = user.getLastSignInAt() != null ? user.getLastSignInAt().toString() : "查無登入紀錄";
+        String lastSignInStr = user.getLastSignInAt() != null ? user.getLastSignInAt().withZoneSameInstant(ZoneId.of("UTC+8")).toString() : "查無登入紀錄";
 
         String message = "查詢成功";
         UserLastSignInResponse response = new UserLastSignInResponse(
